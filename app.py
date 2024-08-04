@@ -20,11 +20,11 @@ data_embeddings = embedder.encode(data, convert_to_tensor=True)
 def find_relevant_context(question, data, data_embeddings):
     question_embedding = embedder.encode(question, convert_to_tensor=True)
     cos_scores = util.pytorch_cos_sim(question_embedding, data_embeddings)[0]
-    top_score_idx = cos_scores.argmax().item()
+    top_score_idx = cos_scores.argsort(descending=True)[:2].tolist()  # Get indices of top 2 scores
     
-    # Adjust context size if needed
-    context_chunk = data[max(top_score_idx - 1, 0):top_score_idx + 1]
-    return " ".join(context_chunk)
+    # Get top two paragraphs
+    context_chunks = [data[idx] for idx in top_score_idx]
+    return " ".join(context_chunks)
 
 # Route for question-answering
 @app.route('/ask', methods=['POST'])
@@ -35,9 +35,11 @@ def ask():
 
     context = find_relevant_context(question, data, data_embeddings)
 
-    # Generate answer using the QA model
+    # Generate answer using the question-answering model
     result = qa_model(question=question, context=context)
-    return jsonify({'answer': result['answer']})
+    answer = result['answer']
+    
+    return jsonify({'answer': answer})
 
 # Route for health check
 @app.route('/health', methods=['GET'])
