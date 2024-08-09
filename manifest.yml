@@ -1,10 +1,10 @@
 applications:
   - name: flask-bert-app
     memory: 1G
-    disk_quota: 6G    
+    disk_quota: 5G    
     instances: 1
     docker:
-      image: himanshuyadav2024/flask-roberta-app:1
+      image: himanshuyadav2024/flask-roberta-app:4
     env:
       FLASK_ENV: development
     health-check-type: port
